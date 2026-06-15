@@ -1,9 +1,87 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Home, Package, FileText, History, Bell, Search, Plus, Printer,
   Edit2, Trash2, Globe, ShoppingCart, AlertTriangle, CheckCircle,
-  Clock, TrendingDown, X, Save, Upload, ChevronRight, Tag
+  Clock, TrendingDown, X, Save, Upload, ChevronRight, Tag, Camera
 } from "lucide-react";
+
+// ─── Barcode Scanner Component ────────────────────────────────────────────────
+function BarcodeScanner({ onDetected, onClose }) {
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const [error, setError] = useState(null);
+  const [scanning, setScanning] = useState(false);
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, []);
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      streamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+      setScanning(true);
+    } catch {
+      setError("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+  };
+
+  const capture = async () => {
+    if (!videoRef.current) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    canvas.getContext("2d").drawImage(videoRef.current, 0, 0);
+    const base64 = canvas.toDataURL("image/jpeg").split(",")[1];
+    try {
+      const resp = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": "REPLACE_API_KEY", "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514", max_tokens: 200,
+          messages: [{ role: "user", content: [
+            { type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } },
+            { type: "text", text: "Lis le code barre dans cette image. Retourne UNIQUEMENT le numéro du code barre, rien d'autre. Si tu ne vois pas de code barre, retourne 'NONE'." }
+          ]}]
+        })
+      });
+      const data = await resp.json();
+      const result = data.content?.[0]?.text?.trim();
+      if (result && result !== "NONE") { stopCamera(); onDetected(result); }
+      else { setError("Aucun code barre détecté. Réessayez."); setTimeout(() => setError(null), 2000); }
+    } catch { setError("Erreur lors de la lecture."); }
+  };
+
+  return (
+    <div className="overlay">
+      <div className="modal" style={{ maxWidth: 420 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <div className="modal-title" style={{ margin: 0 }}>Scanner le code barre</div>
+          <button className="btn btn-outline btn-sm" onClick={() => { stopCamera(); onClose(); }}><X size={14} /></button>
+        </div>
+        {error && <div className="errbox">{error}</div>}
+        <div style={{ position: "relative", borderRadius: "var(--r)", overflow: "hidden", background: "#000", marginBottom: 16 }}>
+          <video ref={videoRef} autoPlay playsInline style={{ width: "100%", display: "block", maxHeight: 300, objectFit: "cover" }} />
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+            <div style={{ width: 220, height: 80, border: "2.5px solid var(--coral)", borderRadius: 8, boxShadow: "0 0 0 1000px rgba(0,0,0,0.45)" }} />
+          </div>
+        </div>
+        <p style={{ fontSize: 13, color: "var(--text2)", textAlign: "center", marginBottom: 16 }}>Pointez la caméra vers le code barre et appuyez sur le bouton</p>
+        <button className="btn btn-coral" style={{ width: "100%" }} onClick={capture} disabled={!scanning}>
+          <Camera size={16} /> Lire le code barre
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 const T = {
@@ -454,6 +532,7 @@ export default function StockEasy() {
   const [toast, setToast] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [promoProduct, setPromoProduct] = useState(null);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
@@ -662,7 +741,7 @@ export default function StockEasy() {
             <div className="modal-title">{editId ? "Modifier le produit" : "Nouveau produit"}</div>
             <div className="fgrid">
               <div className="fg"><label className="flabel">{t.productId}</label><input className="finput" value={form.id || ""} onChange={e => setForm(f => ({ ...f, id: e.target.value }))} /></div>
-              <div className="fg"><label className="flabel">{t.barcode}</label><input className="finput" value={form.barcode || ""} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} /></div>
+              <div className="fg"><label className="flabel">{t.barcode}</label><div style={{ display: "flex", gap: 8 }}><input className="finput" style={{ flex: 1 }} value={form.barcode || ""} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} placeholder="Ex: 3017620422003" /><button type="button" className="btn btn-outline btn-sm" style={{ flexShrink: 0 }} onClick={() => setShowBarcodeScanner(true)} title="Scanner avec la caméra"><Camera size={15} /></button></div></div>
               <div className="fg full"><label className="flabel">{t.description}</label><input className="finput" value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Ex: Chips Vivo nature" /></div>
               <div className="fg"><label className="flabel">{t.qtyProducts}</label><input className="finput" type="number" value={form.qtyProducts || ""} onChange={e => setForm(f => ({ ...f, qtyProducts: e.target.value }))} /></div>
               <div className="fg"><label className="flabel">{t.qtyArticles}</label><input className="finput" type="number" value={form.qtyArticles || ""} onChange={e => setForm(f => ({ ...f, qtyArticles: e.target.value }))} /></div>
@@ -692,6 +771,7 @@ export default function StockEasy() {
       )}
 
       {promoProduct && <PromoForm product={promoProduct} onClose={() => setPromoProduct(null)} t={t} />}
+      {showBarcodeScanner && <BarcodeScanner onDetected={(code) => { setForm(f => ({ ...f, barcode: code })); setShowBarcodeScanner(false); }} onClose={() => setShowBarcodeScanner(false)} />}
       {toast && <div className="toast">{toast}</div>}
     </>
   );
