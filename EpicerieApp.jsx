@@ -62,6 +62,14 @@ const T = {
     scanInstruction: "Pointez la caméra vers le code barre",
     readBarcode: "Lire le code barre",
     noBarcode: "Aucun code barre détecté. Réessayez.",
+    inventory: "Inventaire", inventorySub: "Comptez votre stock produit par produit",
+    inventoryEnable: "Activer l'inventaire périodique", inventoryEnableSub: "Recevoir un rappel pour faire l'inventaire",
+    inventoryFreq: "Fréquence de l'inventaire", inventoryDay: "Jour préféré",
+    inventoryReminder: "Rappel", inventoryReminderDay: "La veille", inventoryReminderSame: "Le jour même",
+    inventoryStart: "Commencer l'inventaire", inventoryDone: "Inventaire terminé !",
+    inventoryNext: "Prochain inventaire", stockExpected: "Stock attendu", stockReal: "Stock réel",
+    inventorySaved: "Inventaire enregistré !", inventorySkip: "Passer", inventoryFinish: "Terminer l'inventaire",
+    days7: "Tous les 7 jours", days14: "Tous les 14 jours", days30: "Tous les 30 jours", daysCustom: "Personnalisé", customDays: "Nombre de jours",
   },
   en: {
     appName: "StockEasy", tagline: "Simplified stock management",
@@ -117,6 +125,14 @@ const T = {
     scanInstruction: "Point the camera at the barcode",
     readBarcode: "Read barcode",
     noBarcode: "No barcode detected. Try again.",
+    inventory: "Inventory", inventorySub: "Count your stock product by product",
+    inventoryEnable: "Enable periodic inventory", inventoryEnableSub: "Get a reminder to do inventory",
+    inventoryFreq: "Inventory frequency", inventoryDay: "Preferred day",
+    inventoryReminder: "Reminder", inventoryReminderDay: "The day before", inventoryReminderSame: "Same day",
+    inventoryStart: "Start inventory", inventoryDone: "Inventory done!",
+    inventoryNext: "Next inventory", stockExpected: "Expected stock", stockReal: "Real stock",
+    inventorySaved: "Inventory saved!", inventorySkip: "Skip", inventoryFinish: "Finish inventory",
+    days7: "Every 7 days", days14: "Every 14 days", days30: "Every 30 days", daysCustom: "Custom", customDays: "Number of days",
   },
 };
 
@@ -341,6 +357,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .radio-opt.selected .radio-dot::after{opacity:1}
 .radio-label{font-size:14px;font-weight:600}
 
+
+/* Inventory */
+.inv-card{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px;box-shadow:var(--shadow)}
+.inv-progress{height:6px;background:var(--border);border-radius:4px;margin-bottom:24px;overflow:hidden}
+.inv-progress-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--coral-light));border-radius:4px;transition:width 0.4s}
+.inv-step-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.inv-step-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.inv-lot-row{background:var(--bg);border-radius:var(--r-sm);padding:14px 16px;margin-bottom:10px}
+.inv-lot-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin-bottom:8px}
+.inv-lot-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center}
+.inv-expected{font-size:14px;font-weight:600;color:var(--text2);background:white;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center}
+.inv-next-badge{display:inline-flex;align-items:center;gap:8px;background:var(--coral-pale);color:var(--coral);padding:10px 16px;border-radius:var(--r-sm);font-size:13.5px;font-weight:600;margin-bottom:20px}
 @media(max-width:1024px){.stats{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:1fr}}
 @media(max-width:768px){.sidebar{display:none}.main{margin-left:0;padding:20px}.scanner{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
 `;
@@ -814,6 +842,129 @@ export default function StockEasy() {
             </>
           )}
 
+
+          {/* INVENTORY */}
+          {tab === "inventory" && !inventoryMode && (
+            <>
+              <div className="ph"><div><div className="ph-title">{t.inventory}</div><div className="ph-sub">{t.inventorySub}</div></div></div>
+
+              {inventorySettings.nextInventory && (
+                <div className="inv-next-badge">
+                  <CalendarClock size={18} />
+                  {t.inventoryNext} : {fmtDate(inventorySettings.nextInventory)}
+                </div>
+              )}
+
+              <div style={{ background: "white", border: "1.5px solid var(--border)", borderRadius: "var(--r)", padding: "24px", marginBottom: 16, boxShadow: "var(--shadow)" }}>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Configuration</div>
+
+                <div className="toggle-row">
+                  <div><div className="toggle-label">{t.inventoryEnable}</div><div className="toggle-sub">{t.inventoryEnableSub}</div></div>
+                  <Toggle checked={inventorySettings.enabled} onChange={v => setInventorySettings(s => ({ ...s, enabled: v }))} />
+                </div>
+
+                {inventorySettings.enabled && (
+                  <>
+                    <div style={{ marginTop: 16 }}>
+                      <label className="flabel" style={{ display: "block", marginBottom: 8 }}>{t.inventoryFreq}</label>
+                      <div className="radio-group">
+                        {[{ key: "7", label: t.days7 }, { key: "14", label: t.days14 }, { key: "30", label: t.days30 }, { key: "custom", label: t.daysCustom }].map(o => (
+                          <div key={o.key} className={`radio-opt ${inventorySettings.frequency === o.key ? "selected" : ""}`} onClick={() => setInventorySettings(s => ({ ...s, frequency: o.key }))}>
+                            <div className="radio-dot" />
+                            <div className="radio-label">{o.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                      {inventorySettings.frequency === "custom" && (
+                        <div style={{ marginTop: 12 }}>
+                          <label className="flabel">{t.customDays}</label>
+                          <input className="finput" type="number" min="1" value={inventorySettings.customDays} onChange={e => setInventorySettings(s => ({ ...s, customDays: e.target.value }))} style={{ maxWidth: 140, marginTop: 6 }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ marginTop: 16 }}>
+                      <label className="flabel" style={{ display: "block", marginBottom: 8 }}>{t.inventoryDay}</label>
+                      <select className="finput" value={inventorySettings.preferredDay} onChange={e => setInventorySettings(s => ({ ...s, preferredDay: e.target.value }))} style={{ maxWidth: 200 }}>
+                        {["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].map((d, i) => (
+                          <option key={i} value={i + 1}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div style={{ marginTop: 16 }}>
+                      <label className="flabel" style={{ display: "block", marginBottom: 8 }}>{t.inventoryReminder}</label>
+                      <div className="radio-group" style={{ flexDirection: "row", gap: 10 }}>
+                        {[{ key: "day_before", label: t.inventoryReminderDay }, { key: "same", label: t.inventoryReminderSame }].map(o => (
+                          <div key={o.key} className={`radio-opt ${inventorySettings.reminder === o.key ? "selected" : ""}`} style={{ flex: 1 }} onClick={() => setInventorySettings(s => ({ ...s, reminder: o.key }))}>
+                            <div className="radio-dot" />
+                            <div className="radio-label">{o.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <button className="btn btn-coral btn-lg" onClick={startInventory} disabled={products.length === 0}>
+                <ClipboardList size={18} /> {t.inventoryStart}
+              </button>
+            </>
+          )}
+
+          {/* INVENTORY MODE - step by step */}
+          {tab === "inventory" && inventoryMode && (
+            <>
+              <div className="ph">
+                <div><div className="ph-title">{t.inventory}</div><div className="ph-sub">{inventoryStep + 1} / {products.length}</div></div>
+                <button className="btn btn-outline" onClick={() => setInventoryMode(false)}><X size={15} /> {t.cancel}</button>
+              </div>
+
+              <div className="inv-progress"><div className="inv-progress-fill" style={{ width: `${((inventoryStep + 1) / products.length) * 100}%` }} /></div>
+
+              {products[inventoryStep] && (() => {
+                const p = products[inventoryStep];
+                return (
+                  <div className="inv-card">
+                    <div className="inv-step-title">{p.description}</div>
+                    <div className="inv-step-sub">{p.barcode || "Pas de code barre"} · Stock total actuel : {(p.lots || []).reduce((s, l) => s + parseInt(l.qty || 0), 0)} articles</div>
+
+                    {(p.lots || []).map((l, i) => (
+                      <div key={l.id} className="inv-lot-row">
+                        <div className="inv-lot-label">{t.lot} {i + 1} — Exp. {fmtDate(l.expiryDate)}</div>
+                        <div className="inv-lot-inputs">
+                          <div>
+                            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4 }}>{t.stockExpected}</div>
+                            <div className="inv-expected">{l.qty} art.</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4 }}>{t.stockReal}</div>
+                            <input className="finput" type="number" min="0"
+                              value={inventoryData[p.id + "_" + i] ?? l.qty}
+                              onChange={e => setInventoryData(d => ({ ...d, [p.id + "_" + i]: e.target.value }))}
+                              style={{ textAlign: "center", fontWeight: 700, fontSize: 16 }} />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div style={{ display: "flex", gap: 10, marginTop: 16, justifyContent: "space-between" }}>
+                      {inventoryStep > 0 && <button className="btn btn-outline" onClick={() => setInventoryStep(s => s - 1)}>← Précédent</button>}
+                      <div style={{ marginLeft: "auto", display: "flex", gap: 10 }}>
+                        <button className="btn btn-outline" onClick={() => { if (inventoryStep < products.length - 1) setInventoryStep(s => s + 1); else saveInventory(); }}>{t.inventorySkip}</button>
+                        {inventoryStep < products.length - 1
+                          ? <button className="btn btn-coral" onClick={() => setInventoryStep(s => s + 1)}>Suivant →</button>
+                          : <button className="btn btn-coral" onClick={saveInventory}><CheckCircle size={15} /> {t.inventoryFinish}</button>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+            </>
+          )}
+
           {/* SETTINGS */}
           {tab === "settings" && (
             <>
@@ -846,7 +997,7 @@ export default function StockEasy() {
               </div>
 
               <div className="settings-section">
-                <div className="settings-title">{t.notifChannel}</div>
+                <div className="settings-title">{t.notifChannel}</di
                 <div className="radio-group">
                   {[{ key: "app", label: t.notifInApp, sub: "Visible dans l'onglet Alertes" }, { key: "push", label: t.notifPush, sub: "Notification sur l'écran de l'appareil" }, { key: "both", label: "Les deux", sub: "Dans l'app et sur l'écran" }].map(o => (
                     <div key={o.key} className={`radio-opt ${notifSettings.channel === o.key ? "selected" : ""}`} onClick={() => setNotifSettings(s => ({ ...s, channel: o.key }))}>
