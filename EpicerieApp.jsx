@@ -63,12 +63,12 @@ const T = {
     readBarcode: "Lire le code barre",
     noBarcode: "Aucun code barre détecté. Réessayez.",
     inventory: "Inventaire", inventorySub: "Comptez votre stock produit par produit",
-    inventoryEnable: "Activer l'inventaire périodique", inventoryEnableSub: "Recevoir un rappel pour faire l'inventaire",
-    inventoryFreq: "Fréquence de l'inventaire", inventoryDay: "Jour préféré",
+    inventoryEnable: "Activer l&apos;inventaire périodique", inventoryEnableSub: "Recevoir un rappel pour faire l&apos;inventaire",
+    inventoryFreq: "Fréquence de l&apos;inventaire", inventoryDay: "Jour préféré",
     inventoryReminder: "Rappel", inventoryReminderDay: "La veille", inventoryReminderSame: "Le jour même",
-    inventoryStart: "Commencer l'inventaire", inventoryDone: "Inventaire terminé !",
+    inventoryStart: "Commencer l&apos;inventaire", inventoryDone: "Inventaire terminé !",
     inventoryNext: "Prochain inventaire", stockExpected: "Stock attendu", stockReal: "Stock réel",
-    inventorySaved: "Inventaire enregistré !", inventorySkip: "Passer", inventoryFinish: "Terminer l'inventaire",
+    inventorySaved: "Inventaire enregistré !", inventorySkip: "Passer", inventoryFinish: "Terminer l&apos;inventaire",
     days7: "Tous les 7 jours", days14: "Tous les 14 jours", days30: "Tous les 30 jours", daysCustom: "Personnalisé", customDays: "Nombre de jours",
   },
   en: {
@@ -981,7 +981,7 @@ export default function StockEasy() {
               <div className="settings-section">
                 <div className="settings-title">{t.notifTiming}</div>
                 <div className="radio-group">
-                  {[{ key: "instant", label: t.notifInstant, sub: "Dès qu'un événement se produit" }, { key: "closing", label: t.notifClosing, sub: "Un résumé à l'heure de fermeture" }, { key: "both", label: t.notifBoth, sub: "Instantané + résumé à la fermeture" }].map(o => (
+                  {[{ key: "instant", label: t.notifInstant, sub: "Des qu un evenement se produit" }, { key: "closing", label: t.notifClosing, sub: "Un resume a la fermeture" }, { key: "both", label: t.notifBoth, sub: "Instantane + resume a la fermeture" }].map(o => (
                     <div key={o.key} className={`radio-opt ${notifSettings.timing === o.key ? "selected" : ""}`} onClick={() => setNotifSettings(s => ({ ...s, timing: o.key }))}>
                       <div className="radio-dot" />
                       <div><div className="radio-label">{o.label}</div><div style={{ fontSize: 12, color: "var(--text3)" }}>{o.sub}</div></div>
@@ -997,9 +997,9 @@ export default function StockEasy() {
               </div>
 
               <div className="settings-section">
-                <div className="settings-title">{t.notifChannel}</di
+                <div className="settings-title">{t.notifChannel}</div>
                 <div className="radio-group">
-                  {[{ key: "app", label: t.notifInApp, sub: "Visible dans l'onglet Alertes" }, { key: "push", label: t.notifPush, sub: "Notification sur l'écran de l'appareil" }, { key: "both", label: "Les deux", sub: "Dans l'app et sur l'écran" }].map(o => (
+                  {[{ key: "app", label: t.notifInApp, sub: "Visible dans l&apos;onglet Alertes" }, { key: "push", label: t.notifPush, sub: "Notification sur l&apos;écran de l&apos;appareil" }, { key: "both", label: "Les deux", sub: "Dans l&apos;app et sur l&apos;écran" }].map(o => (
                     <div key={o.key} className={`radio-opt ${notifSettings.channel === o.key ? "selected" : ""}`} onClick={() => setNotifSettings(s => ({ ...s, channel: o.key }))}>
                       <div className="radio-dot" />
                       <div><div className="radio-label">{o.label}</div><div style={{ fontSize: 12, color: "var(--text3)" }}>{o.sub}</div></div>
