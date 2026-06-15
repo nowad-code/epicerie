@@ -1,300 +1,447 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
+import {
+  Home, Package, FileText, History, Bell, Search, Plus, Printer,
+  Edit2, Trash2, Globe, ShoppingCart, AlertTriangle, CheckCircle,
+  Clock, TrendingDown, X, Save, Upload, ChevronRight, Tag
+} from "lucide-react";
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 const T = {
   fr: {
-    appName: "MonÉpicerie",
-    dashboard: "Tableau de bord",
-    products: "Produits",
-    addProduct: "Ajouter un produit",
-    scanInvoice: "Scanner une facture",
-    history: "Historique",
-    alerts: "Alertes",
-    search: "Rechercher un produit...",
-    productId: "N° Produit",
-    barcode: "Code barre",
-    description: "Description",
-    qtyProducts: "Qté produits",
-    qtyArticles: "Qté articles / produit",
-    purchaseDate: "Date d'achat",
-    expiryDate: "Date de péremption",
-    minStock: "Seuil minimum",
-    save: "Enregistrer",
-    cancel: "Annuler",
-    delete: "Supprimer",
-    edit: "Modifier",
-    analyze: "Analyser la facture",
-    analyzing: "Analyse en cours...",
-    dragDrop: "Glisser ou cliquer pour importer",
-    formats: "JPG · PNG · PDF",
-    expiredLabel: "PÉRIMÉ",
-    expiresIn: "Expire dans",
-    days: "jours",
-    lowStock: "Stock bas",
-    totalProducts: "Produits",
-    totalAlerts: "Alertes actives",
-    expiringSoon: "Expirent bientôt",
-    lowStockAlert: "Stock faible",
-    noProducts: "Aucun produit enregistré",
-    noAlerts: "Aucune alerte active",
-    addFirst: "Ajoutez votre premier produit",
-    invoiceHistory: "Historique des factures",
-    noHistory: "Aucune facture enregistrée",
-    supplier: "Fournisseur",
-    invoiceDate: "Date facture",
-    amount: "Montant",
-    manualEntry: "Saisie manuelle",
-    lang: "EN",
-    confirmDelete: "Supprimer ce produit ?",
-    yes: "Oui",
-    no: "Non",
-    today: "Aujourd'hui",
-    errorAnalysis: "Erreur d'analyse. Vérifiez le fichier.",
-    productAdded: "Produit ajouté !",
-    productUpdated: "Produit mis à jour !",
-    invoiceAnalyzed: "Facture analysée !",
-    articles: "articles",
-    minStockReached: "Seuil minimum atteint",
+    appName: "StockEasy", tagline: "Gestion de stock simplifiée",
+    dashboard: "Accueil", products: "Mes produits", addProduct: "Ajouter un produit",
+    scanInvoice: "Scanner une facture", history: "Historique", alerts: "Alertes",
+    search: "Rechercher un produit...", productId: "Référence", barcode: "Code barre",
+    description: "Nom du produit", qtyProducts: "Nb de références", qtyArticles: "Nb d'articles",
+    purchaseDate: "Date d'achat", expiryDate: "Date de péremption", minStock: "Stock minimum",
+    save: "Enregistrer", cancel: "Annuler", delete: "Supprimer", edit: "Modifier",
+    analyze: "Analyser la facture", analyzing: "Analyse en cours...",
+    dragDrop: "Cliquez ou glissez pour importer une facture", formats: "JPG · PNG · PDF acceptés",
+    expiredLabel: "PÉRIMÉ", expiresIn: "Expire dans", days: "jours", lowStock: "Stock bas",
+    totalProducts: "Produits", totalAlerts: "Alertes", expiringSoon: "Expirent bientôt",
+    noProducts: "Aucun produit encore", noAlerts: "Tout est en ordre !",
+    addFirst: "Commencez par ajouter votre premier produit",
+    invoiceHistory: "Historique des factures", noHistory: "Aucune facture enregistrée",
+    supplier: "Fournisseur", invoiceDate: "Date", amount: "Montant",
+    confirmDelete: "Supprimer ce produit ?", yes: "Oui, supprimer", no: "Annuler",
+    errorAnalysis: "Erreur lors de l'analyse.", productAdded: "Produit ajouté !",
+    productUpdated: "Produit mis à jour !", invoiceAnalyzed: "Facture analysée !",
+    articles: "articles", minStockReached: "Stock minimum atteint",
+    quickActions: "Actions rapides", lang: "EN",
+    promoTitle: "Affiche promotionnelle", promoProduct: "Nom du produit",
+    promoOldPrice: "Ancien prix (€)", promoNewPrice: "Nouveau prix (€)",
+    promoDeadline: "Date limite", promoPrint: "Imprimer l'affiche",
+    promoStyleMinimal: "Minimaliste", promoStyleBold: "Colorée", promoStyleTag: "Étiquette",
+    promoChooseStyle: "Choisir un style", promoGenerate: "Générer l'affiche",
+    goodStock: "En bon état", welcomeMsg: "Bonjour 👋",
+    welcomeSub: "Voici l'état de votre stock aujourd'hui",
   },
   en: {
-    appName: "MyGrocery",
-    dashboard: "Dashboard",
-    products: "Products",
-    addProduct: "Add product",
-    scanInvoice: "Scan invoice",
-    history: "History",
-    alerts: "Alerts",
-    search: "Search a product...",
-    productId: "Product #",
-    barcode: "Barcode",
-    description: "Description",
-    qtyProducts: "Product qty",
-    qtyArticles: "Articles / product",
-    purchaseDate: "Purchase date",
-    expiryDate: "Expiry date",
-    minStock: "Min. stock",
-    save: "Save",
-    cancel: "Cancel",
-    delete: "Delete",
-    edit: "Edit",
-    analyze: "Analyze invoice",
-    analyzing: "Analyzing...",
-    dragDrop: "Drag or click to import",
-    formats: "JPG · PNG · PDF",
-    expiredLabel: "EXPIRED",
-    expiresIn: "Expires in",
-    days: "days",
-    lowStock: "Low stock",
-    totalProducts: "Products",
-    totalAlerts: "Active alerts",
-    expiringSoon: "Expiring soon",
-    lowStockAlert: "Low stock",
-    noProducts: "No products registered",
-    noAlerts: "No active alerts",
-    addFirst: "Add your first product",
-    invoiceHistory: "Invoice history",
-    noHistory: "No invoice registered",
-    supplier: "Supplier",
-    invoiceDate: "Invoice date",
-    amount: "Amount",
-    manualEntry: "Manual entry",
-    lang: "FR",
-    confirmDelete: "Delete this product?",
-    yes: "Yes",
-    no: "No",
-    today: "Today",
-    errorAnalysis: "Analysis error. Check the file.",
-    productAdded: "Product added!",
-    productUpdated: "Product updated!",
-    invoiceAnalyzed: "Invoice analyzed!",
-    articles: "articles",
-    minStockReached: "Minimum stock reached",
+    appName: "StockEasy", tagline: "Simplified stock management",
+    dashboard: "Home", products: "My products", addProduct: "Add product",
+    scanInvoice: "Scan invoice", history: "History", alerts: "Alerts",
+    search: "Search a product...", productId: "Reference", barcode: "Barcode",
+    description: "Product name", qtyProducts: "References", qtyArticles: "Articles",
+    purchaseDate: "Purchase date", expiryDate: "Expiry date", minStock: "Min. stock",
+    save: "Save", cancel: "Cancel", delete: "Delete", edit: "Edit",
+    analyze: "Analyze invoice", analyzing: "Analyzing...",
+    dragDrop: "Click or drag to import an invoice", formats: "JPG · PNG · PDF accepted",
+    expiredLabel: "EXPIRED", expiresIn: "Expires in", days: "days", lowStock: "Low stock",
+    totalProducts: "Products", totalAlerts: "Alerts", expiringSoon: "Expiring soon",
+    noProducts: "No products yet", noAlerts: "Everything is fine!",
+    addFirst: "Start by adding your first product",
+    invoiceHistory: "Invoice history", noHistory: "No invoice registered",
+    supplier: "Supplier", invoiceDate: "Date", amount: "Amount",
+    confirmDelete: "Delete this product?", yes: "Yes, delete", no: "Cancel",
+    errorAnalysis: "Analysis error.", productAdded: "Product added!",
+    productUpdated: "Product updated!", invoiceAnalyzed: "Invoice analyzed!",
+    articles: "articles", minStockReached: "Minimum stock reached",
+    quickActions: "Quick actions", lang: "FR",
+    promoTitle: "Promotional poster", promoProduct: "Product name",
+    promoOldPrice: "Old price (€)", promoNewPrice: "New price (€)",
+    promoDeadline: "Deadline", promoPrint: "Print poster",
+    promoStyleMinimal: "Minimal", promoStyleBold: "Colorful", promoStyleTag: "Label",
+    promoChooseStyle: "Choose a style", promoGenerate: "Generate poster",
+    goodStock: "Good condition", welcomeMsg: "Hello 👋",
+    welcomeSub: "Here is your stock status today",
   },
 };
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-const today = () => new Date().toISOString().split("T")[0];
-const daysUntil = (dateStr) => {
-  if (!dateStr) return null;
-  const diff = new Date(dateStr) - new Date(today());
-  return Math.ceil(diff / 86400000);
-};
-const fmtDate = (d) => {
-  if (!d) return "—";
-  const [y, m, day] = d.split("-");
-  return `${day}/${m}/${y}`;
-};
-const uid = () => Math.random().toString(36).slice(2, 8).toUpperCase();
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// ─── CSS ──────────────────────────────────────────────────────────────────────
 const css = `
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F7F5F0;--surface:#FFFFFF;--surface2:#F0EDE6;
-  --border:#E2DDD4;--border2:#C8C2B5;
-  --green:#2D6A4F;--green-light:#52B788;--green-pale:#D8F3DC;
-  --amber:#E76F00;--amber-pale:#FFF3E0;
-  --red:#C0392B;--red-pale:#FDEDEC;
-  --blue:#1A6B8A;--blue-pale:#E3F2FD;
-  --text:#1C1917;--muted:#78716C;--muted2:#A8A29E;
-  --font:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
-  --radius:14px;--shadow:0 2px 12px rgba(0,0,0,0.08);
+  --coral:#FF5C40;--coral-light:#FF7A62;--coral-pale:#FFF0EE;--coral-dark:#E04430;
+  --bg:#F7F7FA;--surface:#FFFFFF;--border:#E8E8EE;--border2:#D0D0DC;
+  --text:#18181F;--text2:#5A5A72;--text3:#9898B0;
+  --green:#16A34A;--green-pale:#F0FDF4;
+  --amber:#D97706;--amber-pale:#FFFBEB;
+  --red:#DC2626;--red-pale:#FEF2F2;
+  --indigo:#4F46E5;--indigo-pale:#EEF2FF;
+  --font:'Plus Jakarta Sans',sans-serif;
+  --r:14px;--r-sm:10px;--r-lg:20px;
+  --shadow:0 1px 3px rgba(0,0,0,0.05),0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.1);
 }
 body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
-.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh;max-width:1400px;margin:0 auto}
+.app{display:flex;min-height:100vh}
 
 /* Sidebar */
-.sidebar{background:var(--green);padding:28px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
-.brand{padding:0 8px 24px;border-bottom:1px solid rgba(255,255,255,0.15);margin-bottom:8px}
-.brand-name{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px}
-.brand-sub{font-size:11px;color:rgba(255,255,255,0.55);font-family:var(--mono);margin-top:2px}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:none;background:transparent;color:rgba(255,255,255,0.7);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;width:100%;text-align:left}
-.nav-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
-.nav-btn.active{background:rgba(255,255,255,0.18);color:#fff;font-weight:600}
-.nav-icon{font-size:16px;width:20px;text-align:center}
-.nav-badge{margin-left:auto;background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:20px;font-family:var(--mono)}
-.lang-btn{margin-top:auto;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.7);font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.15s}
-.lang-btn:hover{background:rgba(255,255,255,0.1);color:#fff}
+.sidebar{width:256px;background:white;border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 14px;position:fixed;height:100vh;z-index:10;overflow-y:auto}
+.main{margin-left:256px;flex:1;padding:36px;min-height:100vh}
 
-/* Main */
-.main{padding:32px;overflow-y:auto}
-.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-.page-title{font-size:26px;font-weight:800;letter-spacing:-0.5px}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;border:none;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s}
-.btn-primary{background:var(--green);color:#fff}
-.btn-primary:hover{background:var(--green-light)}
-.btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text)}
-.btn-secondary:hover{border-color:var(--green);color:var(--green)}
-.btn-danger{background:var(--red-pale);color:var(--red);border:1px solid rgba(192,57,43,0.2)}
-.btn-danger:hover{background:var(--red);color:#fff}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn:disabled{opacity:0.4;cursor:not-allowed}
+/* Brand */
+.brand{display:flex;align-items:center;gap:10px;padding:4px 10px 24px;margin-bottom:4px;border-bottom:1px solid var(--border)}
+.brand-icon{width:34px;height:34px;background:var(--coral);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.brand-text{font-size:17px;font-weight:800;letter-spacing:-0.4px}
+.brand-text span{color:var(--coral)}
+
+/* Nav */
+.nav-group{margin-top:16px}
+.nav-group-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);padding:0 10px;margin-bottom:4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-sm);border:none;background:transparent;color:var(--text2);font-family:var(--font);font-size:13.5px;font-weight:500;cursor:pointer;transition:all 0.15s;width:100%;text-align:left}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--coral-pale);color:var(--coral);font-weight:600}
+.nav-item svg{flex-shrink:0;opacity:0.7}
+.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--coral);color:white;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+.lang-btn{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;width:100%;transition:all 0.15s}
+.lang-btn:hover{border-color:var(--coral);color:var(--coral)}
+
+/* Page header */
+.ph{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
+.ph-title{font-size:26px;font-weight:800;letter-spacing:-0.6px}
+.ph-sub{font-size:13.5px;color:var(--text2);margin-top:3px}
 
 /* Stats */
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
-.stat-icon{font-size:24px;margin-bottom:10px}
-.stat-val{font-size:28px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
-.stat-lbl{font-size:12px;color:var(--muted);margin-top:2px;font-weight:500}
-.stat-card.alert-card{border-color:rgba(231,111,0,0.3);background:var(--amber-pale)}
-.stat-card.alert-card .stat-val{color:var(--amber)}
-.stat-card.red-card{border-color:rgba(192,57,43,0.3);background:var(--red-pale)}
-.stat-card.red-card .stat-val{color:var(--red)}
-.stat-card.green-card{border-color:rgba(82,183,136,0.3);background:var(--green-pale)}
-.stat-card.green-card .stat-val{color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.stat{background:white;border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:var(--shadow);transition:transform 0.15s}
+.stat:hover{transform:translateY(-2px)}
+.stat-ic{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.stat-val{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1}
+.stat-lbl{font-size:12.5px;color:var(--text2);margin-top:3px;font-weight:500}
+.s-coral .stat-ic{background:var(--coral-pale)} .s-coral .stat-val{color:var(--coral)}
+.s-green .stat-ic{background:var(--green-pale)} .s-green .stat-val{color:var(--green)}
+.s-amber .stat-ic{background:var(--amber-pale)} .s-amber .stat-val{color:var(--amber)}
+.s-red .stat-ic{background:var(--red-pale)} .s-red .stat-val{color:var(--red)}
+
+/* Quick actions */
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}
+.qa{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:22px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+.qa:hover{border-color:var(--coral);box-shadow:0 4px 20px rgba(255,92,64,0.1);transform:translateY(-2px)}
+.qa.qa-primary{background:var(--coral);border-color:var(--coral)}
+.qa.qa-primary .qa-title{color:white}
+.qa.qa-primary .qa-sub{color:rgba(255,255,255,0.7)}
+.qa-ic{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--coral-pale)}
+.qa.qa-primary .qa-ic{background:rgba(255,255,255,0.2)}
+.qa-title{font-size:15px;font-weight:700;margin-bottom:3px}
+.qa-sub{font-size:12.5px;color:var(--text2)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border-radius:var(--r-sm);border:none;font-family:var(--font);font-size:13.5px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.btn-coral{background:var(--coral);color:white} .btn-coral:hover{background:var(--coral-dark)}
+.btn-outline{background:white;border:1.5px solid var(--border);color:var(--text)} .btn-outline:hover{border-color:var(--coral);color:var(--coral)}
+.btn-danger{background:var(--red-pale);color:var(--red);border:1px solid rgba(220,38,38,0.2)} .btn-danger:hover{background:var(--red);color:white}
+.btn-indigo{background:var(--indigo);color:white} .btn-indigo:hover{background:#4338CA}
+.btn-amber{background:var(--amber-pale);color:var(--amber);border:1px solid rgba(217,119,6,0.2)} .btn-amber:hover{background:var(--amber);color:white}
+.btn-sm{padding:7px 13px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
 
 /* Search */
-.search-bar{position:relative;margin-bottom:20px}
-.search-bar input{width:100%;padding:12px 16px 12px 40px;border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:14px;background:var(--surface);outline:none;transition:border-color 0.15s}
-.search-bar input:focus{border-color:var(--green)}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted2);font-size:16px}
+.search-wrap{position:relative;margin-bottom:20px}
+.search-wrap input{width:100%;padding:13px 16px 13px 44px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font);font-size:13.5px;background:white;outline:none;transition:border-color 0.15s;color:var(--text)}
+.search-wrap input:focus{border-color:var(--coral)}
+.search-wrap input::placeholder{color:var(--text3)}
+.search-ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3)}
 
-/* Product grid */
-.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.product-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);transition:all 0.15s;position:relative}
-.product-card:hover{box-shadow:0 4px 20px rgba(0,0,0,0.12);transform:translateY(-1px)}
-.product-card.expired{border-color:var(--red);background:var(--red-pale)}
-.product-card.expiring{border-color:var(--amber)}
-.product-card.low-stock{border-left:4px solid var(--amber)}
-.prod-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-.prod-id{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--surface2);padding:3px 8px;border-radius:20px}
-.prod-badges{display:flex;gap:6px;flex-wrap:wrap}
-.badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;font-family:var(--mono)}
-.badge-red{background:var(--red);color:#fff}
-.badge-amber{background:var(--amber);color:#fff}
-.badge-green{background:var(--green-pale);color:var(--green)}
-.badge-blue{background:var(--blue-pale);color:var(--blue)}
-.prod-name{font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.3}
-.prod-barcode{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:10px}
-.prod-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.info-item{background:var(--surface2);border-radius:8px;padding:8px 10px}
-.info-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px}
-.info-val{font-size:13px;font-weight:600;font-family:var(--mono)}
-.info-val.red{color:var(--red)}
-.info-val.amber{color:var(--amber)}
-.info-val.green{color:var(--green)}
-.prod-actions{display:flex;gap:8px}
+/* Products */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:14px}
+.pcard{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:18px;transition:all 0.15s;box-shadow:var(--shadow)}
+.pcard:hover{box-shadow:var(--shadow-lg);transform:translateY(-2px)}
+.pcard.expired{border-color:var(--red);background:var(--red-pale)}
+.pcard.expiring{border-color:var(--amber)}
+.pcard.lowstock{border-left:4px solid var(--amber)}
+.ptop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.pref{font-size:11px;font-weight:600;color:var(--text3);background:var(--bg);padding:3px 9px;border-radius:20px;font-family:monospace}
+.pbadges{display:flex;gap:5px;flex-wrap:wrap}
+.badge{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px}
+.b-red{background:var(--red);color:white} .b-amber{background:var(--amber);color:white}
+.b-indigo{background:var(--indigo-pale);color:var(--indigo)}
+.pname{font-size:15px;font-weight:700;margin-bottom:5px;line-height:1.3}
+.pbar{font-size:11.5px;color:var(--text3);margin-bottom:12px;font-family:monospace}
+.pgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.pinfo{background:var(--bg);border-radius:8px;padding:9px 11px}
+.pinfo-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);margin-bottom:2px}
+.pinfo-v{font-size:13.5px;font-weight:700;color:var(--text)}
+.pinfo-v.red{color:var(--red)} .pinfo-v.amber{color:var(--amber)} .pinfo-v.green{color:var(--green)}
+.pactions{display:flex;gap:7px;flex-wrap:wrap}
 
-/* Form */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
-.modal{background:var(--surface);border-radius:20px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
-.modal-title{font-size:20px;font-weight:800;margin-bottom:24px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.form-group{display:flex;flex-direction:column;gap:6px}
-.form-group.full{grid-column:1/-1}
-.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px}
-.form-input{padding:10px 14px;border:1px solid var(--border);border-radius:10px;font-family:var(--font);font-size:14px;outline:none;transition:border-color 0.15s;background:var(--surface)}
-.form-input:focus{border-color:var(--green)}
-.form-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;backdrop-filter:blur(3px)}
+.modal{background:white;border-radius:var(--r-lg);padding:30px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:22px;letter-spacing:-0.4px}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.flabel{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px}
+.finput{padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:var(--font);font-size:13.5px;outline:none;transition:border-color 0.15s;color:var(--text);background:white}
+.finput:focus{border-color:var(--coral)}
+.factions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
 
-/* Invoice scanner */
-.scanner-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.drop-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:48px 24px;text-align:center;cursor:pointer;transition:all 0.15s;position:relative}
-.drop-zone:hover,.drop-zone.drag{border-color:var(--green);background:var(--green-pale)}
-.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
-.drop-icon{font-size:48px;margin-bottom:16px}
-.drop-title{font-size:15px;font-weight:600;margin-bottom:6px}
-.drop-sub{font-size:12px;color:var(--muted);font-family:var(--mono)}
-.preview-img{width:100%;border-radius:10px;border:1px solid var(--border);max-height:280px;object-fit:cover;margin-bottom:12px}
-.extracted-fields{display:flex;flex-direction:column;gap:10px}
-.extract-item{background:var(--surface2);border-radius:10px;padding:12px 14px}
-.extract-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
-.extract-val{font-size:14px;font-weight:600}
-.loading-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:32px}
-.spinner{width:40px;height:40px;border:3px solid var(--green-pale);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+/* Scanner */
+.scanner{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.dropzone{border:2px dashed var(--border2);border-radius:var(--r);padding:52px 24px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;background:white}
+.dropzone:hover,.dropzone.drag{border-color:var(--coral);background:var(--coral-pale)}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.dz-ic{width:56px;height:56px;border-radius:14px;background:var(--coral-pale);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.dz-title{font-size:15px;font-weight:700;margin-bottom:5px}
+.dz-sub{font-size:12.5px;color:var(--text2)}
+.prev-img{width:100%;border-radius:var(--r-sm);border:1.5px solid var(--border);max-height:260px;object-fit:cover;margin-bottom:12px}
+.extracted{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px}
+.ex-item{background:var(--bg);border-radius:var(--r-sm);padding:11px 13px}
+.ex-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin-bottom:3px}
+.ex-v{font-size:14px;font-weight:600}
+.spin-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px;background:white;border-radius:var(--r);border:1.5px solid var(--border)}
+.spin{width:42px;height:42px;border:3px solid var(--coral-pale);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-text{font-size:13px;color:var(--muted);font-family:var(--mono)}
 
 /* Alerts */
-.alerts-list{display:flex;flex-direction:column;gap:12px}
-.alert-item{background:var(--surface);border-radius:var(--radius);padding:16px 18px;border:1px solid var(--border);display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
-.alert-item.red{border-color:rgba(192,57,43,0.4);background:var(--red-pale)}
-.alert-item.amber{border-color:rgba(231,111,0,0.4);background:var(--amber-pale)}
-.alert-item.blue{border-color:rgba(26,107,138,0.3);background:var(--blue-pale)}
-.alert-icon{font-size:24px;flex-shrink:0}
-.alert-content{flex:1}
-.alert-title{font-size:14px;font-weight:700;margin-bottom:2px}
-.alert-sub{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.alist{display:flex;flex-direction:column;gap:10px}
+.arow{background:white;border-radius:var(--r);padding:16px 18px;border:1.5px solid var(--border);display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+.arow.red{border-color:rgba(220,38,38,0.3);background:var(--red-pale)}
+.arow.amber{border-color:rgba(217,119,6,0.3);background:var(--amber-pale)}
+.arow.indigo{border-color:rgba(79,70,229,0.2);background:var(--indigo-pale)}
+.arow-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.arow.red .arow-ic{background:rgba(220,38,38,0.12)}
+.arow.amber .arow-ic{background:rgba(217,119,6,0.12)}
+.arow.indigo .arow-ic{background:rgba(79,70,229,0.12)}
+.a-title{font-size:14px;font-weight:700;margin-bottom:2px}
+.a-sub{font-size:12.5px;color:var(--text2)}
 
 /* History */
-.history-list{display:flex;flex-direction:column;gap:12px}
-.history-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow)}
-.history-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.history-supplier{font-size:15px;font-weight:700}
-.history-amount{font-size:16px;font-weight:800;font-family:var(--mono);color:var(--green)}
-.history-meta{font-size:12px;color:var(--muted);font-family:var(--mono)}
-.history-products{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
-.history-tag{background:var(--surface2);border-radius:6px;padding:3px 8px;font-size:11px;font-family:var(--mono)}
+.hlist{display:flex;flex-direction:column;gap:10px}
+.hrow{background:white;border:1.5px solid var(--border);border-radius:var(--r);padding:17px 20px;box-shadow:var(--shadow)}
+.htop{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.h-sup{font-size:15px;font-weight:700}
+.h-amt{font-size:17px;font-weight:800;color:var(--coral)}
+.h-date{font-size:12.5px;color:var(--text2)}
+.htags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.htag{background:var(--bg);border-radius:6px;padding:3px 9px;font-size:12px;color:var(--text2)}
 
 /* Empty */
-.empty{text-align:center;padding:80px 20px;color:var(--muted)}
-.empty-icon{font-size:56px;margin-bottom:16px;opacity:0.3}
-.empty-title{font-size:18px;font-weight:700;color:var(--text);opacity:0.5;margin-bottom:8px}
-.empty-sub{font-size:13px;font-family:var(--mono)}
+.empty{text-align:center;padding:72px 20px}
+.empty-ic{width:64px;height:64px;border-radius:16px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;opacity:0.4}
+.empty-title{font-size:18px;font-weight:700;opacity:0.35;margin-bottom:6px}
+.empty-sub{font-size:13px;color:var(--text3)}
 
 /* Toast */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:999;animation:slideIn 0.3s ease}
-@keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:white;padding:13px 20px;border-radius:var(--r-sm);font-size:13.5px;font-weight:600;box-shadow:var(--shadow-lg);z-index:999;animation:tin .3s ease}
+@keyframes tin{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
 
-/* Confirm dialog */
-.confirm{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:200}
-.confirm-box{background:var(--surface);border-radius:16px;padding:24px;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
-.confirm-title{font-size:16px;font-weight:700;margin-bottom:20px}
-.confirm-actions{display:flex;gap:10px;justify-content:center}
+/* Confirm */
+.cover{position:fixed;inset:0;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(3px)}
+.cbox{background:white;border-radius:var(--r-lg);padding:26px;width:310px;text-align:center;box-shadow:var(--shadow-lg)}
+.c-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.c-sub{font-size:13px;color:var(--text2);margin-bottom:22px}
+.c-actions{display:flex;gap:9px;justify-content:center}
 
-@media(max-width:900px){
-  .app{grid-template-columns:1fr}
-  .sidebar{display:flex;flex-direction:row;height:auto;position:static;padding:12px 16px;overflow-x:auto}
-  .brand{display:none}
-  .stats-grid{grid-template-columns:repeat(2,1fr)}
-  .scanner-layout{grid-template-columns:1fr}
-  .form-grid{grid-template-columns:1fr}
+/* Error */
+.errbox{background:var(--red-pale);border:1.5px solid rgba(220,38,38,0.25);border-radius:var(--r-sm);padding:11px 14px;font-size:13px;color:var(--red);margin-bottom:12px;font-weight:500}
+
+/* Promo Modal */
+.promo-styles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.promo-style-btn{border:2px solid var(--border);border-radius:var(--r-sm);padding:14px 10px;cursor:pointer;text-align:center;transition:all 0.15s;background:white;font-family:var(--font)}
+.promo-style-btn:hover{border-color:var(--coral)}
+.promo-style-btn.selected{border-color:var(--coral);background:var(--coral-pale)}
+.promo-style-btn .ps-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.promo-style-btn .ps-label{font-size:12px;font-weight:600;color:var(--text2)}
+.promo-style-btn.selected .ps-label{color:var(--coral)}
+
+/* Print poster styles */
+@media print {
+  .app, .sidebar, .main { display: none !important; }
+  .print-poster { display: block !important; }
 }
+.print-poster { display: none; }
+
+@media(max-width:1024px){.stats{grid-template-columns:repeat(2,1fr)}.quick{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0;padding:20px}.scanner{grid-template-columns:1fr}.fgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
 `;
 
-// ─── App ───────────────────────────────────────────────────────────────────────
-export default function EpicerieApp() {
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const today = () => new Date().toISOString().split("T")[0];
+const daysUntil = (d) => d ? Math.ceil((new Date(d) - new Date(today())) / 86400000) : null;
+const fmtDate = (d) => { if (!d) return "—"; const [y, m, day] = d.split("-"); return `${day}/${m}/${y}`; };
+
+// ─── Promo Poster Component ───────────────────────────────────────────────────
+function PromoPoster({ product, style, oldPrice, newPrice, deadline, onClose, t }) {
+  const discount = oldPrice && newPrice ? Math.round((1 - newPrice / oldPrice) * 100) : null;
+
+  const printPoster = () => {
+    const posterContent = document.getElementById("poster-content").innerHTML;
+    const printWin = window.open("", "_blank");
+    printWin.document.write(`
+      <html><head><title>Affiche promo</title>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
+        body { margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { box-sizing: border-box; }
+      </style></head>
+      <body onload="window.print()">
+        ${posterContent}
+      </body></html>
+    `);
+    printWin.document.close();
+  };
+
+  const posterMinimal = `
+    <div style="width:595px;height:842px;background:white;padding:60px;display:flex;flex-direction:column;justify-content:center;border:2px solid #E8E8EE;">
+      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#9898B0;margin-bottom:32px;">Offre spéciale</div>
+      <div style="font-size:42px;font-weight:800;color:#18181F;line-height:1.1;margin-bottom:40px;">${product}</div>
+      <div style="display:flex;align-items:baseline;gap:20px;margin-bottom:16px;">
+        <div style="font-size:72px;font-weight:900;color:#FF5C40;letter-spacing:-2px;">${newPrice}€</div>
+        <div style="font-size:28px;color:#9898B0;text-decoration:line-through;">${oldPrice}€</div>
+      </div>
+      ${discount ? `<div style="font-size:18px;font-weight:700;color:#FF5C40;margin-bottom:32px;">Économisez ${discount}%</div>` : ""}
+      <div style="width:100%;height:1px;background:#E8E8EE;margin-bottom:32px;"></div>
+      <div style="font-size:14px;color:#5A5A72;font-weight:500;">Date limite de vente : <strong>${fmtDate(deadline)}</strong></div>
+    </div>
+  `;
+
+  const posterBold = `
+    <div style="width:595px;height:842px;background:#FF5C40;padding:60px;display:flex;flex-direction:column;justify-content:center;">
+      <div style="background:white;border-radius:24px;padding:50px;text-align:center;">
+        ${discount ? `<div style="display:inline-block;background:#FF5C40;color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:2px;padding:8px 20px;border-radius:30px;margin-bottom:28px;">-${discount}%</div>` : ""}
+        <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#9898B0;margin-bottom:16px;">Offre spéciale</div>
+        <div style="font-size:38px;font-weight:800;color:#18181F;line-height:1.2;margin-bottom:36px;">${product}</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:12px;">
+          <div style="font-size:26px;color:#9898B0;text-decoration:line-through;">${oldPrice}€</div>
+          <div style="font-size:80px;font-weight:900;color:#FF5C40;letter-spacing:-2px;line-height:1;">${newPrice}€</div>
+        </div>
+        <div style="margin-top:36px;padding-top:28px;border-top:2px solid #E8E8EE;">
+          <div style="font-size:14px;color:#5A5A72;font-weight:600;">À saisir avant le ${fmtDate(deadline)}</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const posterTag = `
+    <div style="width:595px;height:842px;background:#F7F7FA;padding:60px;display:flex;flex-direction:column;justify-content:center;align-items:center;">
+      <div style="width:100%;background:white;border:2.5px solid #18181F;border-radius:16px;overflow:hidden;">
+        <div style="background:#18181F;padding:20px 28px;">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#9898B0;">Offre spéciale</div>
+        </div>
+        <div style="padding:36px 28px;">
+          <div style="font-size:36px;font-weight:800;color:#18181F;margin-bottom:28px;line-height:1.2;">${product}</div>
+          <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px;">
+            <div style="font-size:56px;font-weight:900;color:#FF5C40;letter-spacing:-1.5px;">${newPrice}€</div>
+            <div style="font-size:22px;color:#9898B0;text-decoration:line-through;padding-bottom:8px;">${oldPrice}€</div>
+          </div>
+          ${discount ? `<div style="display:inline-block;background:#FFF0EE;color:#FF5C40;font-size:13px;font-weight:700;padding:5px 14px;border-radius:6px;margin-bottom:28px;">Remise de ${discount}%</div>` : ""}
+          <div style="border-top:1.5px dashed #E8E8EE;margin:24px 0;"></div>
+          <div style="font-size:13px;font-weight:600;color:#5A5A72;">Date limite : <span style="color:#18181F;font-weight:700;">${fmtDate(deadline)}</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const posters = { minimal: posterMinimal, bold: posterBold, tag: posterTag };
+
+  return (
+    <div className="overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 560 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+          <div className="modal-title" style={{ margin: 0 }}>🎯 {t.promoTitle}</div>
+          <button className="btn btn-outline btn-sm" onClick={onClose}><X size={14} /></button>
+        </div>
+        <div style={{ marginBottom: 18, fontSize: 13.5, color: "var(--text2)" }}>
+          Produit : <strong>{product}</strong>
+        </div>
+        <div style={{ background: "var(--bg)", borderRadius: "var(--r)", overflow: "hidden", border: "1.5px solid var(--border)", marginBottom: 20 }}>
+          <div style={{ padding: 16, overflow: "auto" }} id="poster-content"
+            dangerouslySetInnerHTML={{ __html: posters[style] || posterMinimal }} />
+        </div>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+          <button className="btn btn-outline" onClick={onClose}>{t.cancel}</button>
+          <button className="btn btn-coral" onClick={printPoster}><Printer size={15} /> {t.promoPrint}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Promo Form ───────────────────────────────────────────────────────────────
+function PromoForm({ product, onClose, t }) {
+  const [style, setStyle] = useState("minimal");
+  const [oldPrice, setOldPrice] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [deadline, setDeadline] = useState(product.expiryDate || today());
+  const [showPoster, setShowPoster] = useState(false);
+
+  const styles = [
+    { key: "minimal", label: t.promoStyleMinimal, icon: <Tag size={18} color="#5A5A72" />, bg: "#F7F7FA" },
+    { key: "bold", label: t.promoStyleBold, icon: <Tag size={18} color="#FF5C40" />, bg: "#FFF0EE" },
+    { key: "tag", label: t.promoStyleTag, icon: <Tag size={18} color="#18181F" />, bg: "#F0F0F4" },
+  ];
+
+  if (showPoster) return (
+    <PromoPoster product={product.description} style={style}
+      oldPrice={oldPrice} newPrice={newPrice} deadline={deadline}
+      onClose={onClose} t={t} />
+  );
+
+  return (
+    <div className="overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 500 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+          <div className="modal-title" style={{ margin: 0 }}><Printer size={20} style={{ display: "inline", marginRight: 8, verticalAlign: "middle" }} />{t.promoTitle}</div>
+          <button className="btn btn-outline btn-sm" onClick={onClose}><X size={14} /></button>
+        </div>
+
+        <div style={{ marginBottom: 6, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", color: "var(--text2)" }}>{t.promoChooseStyle}</div>
+        <div className="promo-styles">
+          {styles.map(s => (
+            <button key={s.key} className={`promo-style-btn ${style === s.key ? "selected" : ""}`} onClick={() => setStyle(s.key)}>
+              <div className="ps-icon" style={{ background: s.bg }}>{s.icon}</div>
+              <div className="ps-label">{s.label}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className="fgrid">
+          <div className="fg full">
+            <label className="flabel">{t.promoProduct}</label>
+            <input className="finput" value={product.description} readOnly style={{ background: "var(--bg)", color: "var(--text2)" }} />
+          </div>
+          <div className="fg">
+            <label className="flabel">{t.promoOldPrice}</label>
+            <input className="finput" type="number" placeholder="Ex: 2.50" value={oldPrice} onChange={e => setOldPrice(e.target.value)} />
+          </div>
+          <div className="fg">
+            <label className="flabel">{t.promoNewPrice}</label>
+            <input className="finput" type="number" placeholder="Ex: 1.50" value={newPrice} onChange={e => setNewPrice(e.target.value)} />
+          </div>
+          <div className="fg full">
+            <label className="flabel">{t.promoDeadline}</label>
+            <input className="finput" type="date" value={deadline} onChange={e => setDeadline(e.target.value)} />
+          </div>
+        </div>
+        <div className="factions">
+          <button className="btn btn-outline" onClick={onClose}>{t.cancel}</button>
+          <button className="btn btn-coral" onClick={() => setShowPoster(true)} disabled={!oldPrice || !newPrice}>
+            <Printer size={15} /> {t.promoGenerate}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+export default function StockEasy() {
   const [lang, setLang] = useState("fr");
   const t = T[lang];
   const [tab, setTab] = useState("dashboard");
@@ -302,204 +449,159 @@ export default function EpicerieApp() {
   const [invoices, setInvoices] = useState([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editProduct, setEditProduct] = useState(null);
-  const [showScanner, setShowScanner] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState({});
   const [toast, setToast] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [promoProduct, setPromoProduct] = useState(null);
 
-  // Form state
-  const emptyForm = { id: "", barcode: "", description: "", qtyProducts: "", qtyArticles: "", purchaseDate: today(), expiryDate: "", minStock: "" };
-  const [form, setForm] = useState(emptyForm);
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2800); };
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2500); };
-
-  // Alerts computation
   const alerts = products.flatMap(p => {
     const arr = [];
-    const days = daysUntil(p.expiryDate);
-    if (days !== null && days < 0) arr.push({ type: "red", icon: "🔴", title: p.description, sub: `${t.expiredLabel} — ${fmtDate(p.expiryDate)}`, id: p.id + "-exp" });
-    else if (days !== null && days <= 3) arr.push({ type: "amber", icon: "🟡", title: p.description, sub: `${t.expiresIn} ${days} ${t.days} — ${fmtDate(p.expiryDate)}`, id: p.id + "-soon" });
-    if (p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock)) arr.push({ type: "blue", icon: "📦", title: p.description, sub: `${t.minStockReached} (${p.qtyArticles} ${t.articles})`, id: p.id + "-stock" });
+    const d = daysUntil(p.expiryDate);
+    if (d !== null && d < 0) arr.push({ type: "red", Icon: AlertTriangle, title: p.description, sub: `${t.expiredLabel} le ${fmtDate(p.expiryDate)}`, id: p.id + "e", color: "var(--red)" });
+    else if (d !== null && d <= 3) arr.push({ type: "amber", Icon: Clock, title: p.description, sub: `${t.expiresIn} ${d} ${t.days}`, id: p.id + "s", color: "var(--amber)" });
+    if (p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock)) arr.push({ type: "indigo", Icon: TrendingDown, title: p.description, sub: `${t.minStockReached} (${p.qtyArticles} ${t.articles})`, id: p.id + "m", color: "var(--indigo)" });
     return arr;
   });
 
-  const openAdd = () => { setForm({ ...emptyForm, id: uid() }); setEditProduct(null); setShowForm(true); };
-  const openEdit = (p) => { setForm({ ...p }); setEditProduct(p.id); setShowForm(true); };
-
+  const openAdd = () => { setForm({ id: Math.random().toString(36).slice(2, 8).toUpperCase(), purchaseDate: today() }); setEditId(null); setShowForm(true); };
+  const openEdit = (p) => { setForm({ ...p }); setEditId(p.id); setShowForm(true); };
   const saveProduct = () => {
     if (!form.description) return;
-    if (editProduct) {
-      setProducts(ps => ps.map(p => p.id === editProduct ? { ...form } : p));
-      showToast(t.productUpdated);
-    } else {
-      setProducts(ps => [...ps, { ...form }]);
-      showToast(t.productAdded);
-    }
+    if (editId) { setProducts(ps => ps.map(p => p.id === editId ? { ...form } : p)); showToast("✅ " + t.productUpdated); }
+    else { setProducts(ps => [...ps, { ...form }]); showToast("✅ " + t.productAdded); }
     setShowForm(false);
-  };
-
-  const deleteProduct = (id) => {
-    setProducts(ps => ps.filter(p => p.id !== id));
-    setConfirmDelete(null);
   };
 
   const filtered = products.filter(p =>
     p.description?.toLowerCase().includes(search.toLowerCase()) ||
-    p.barcode?.includes(search) ||
-    p.id?.toLowerCase().includes(search.toLowerCase())
+    p.barcode?.includes(search) || p.id?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const getCardClass = (p) => {
-    const days = daysUntil(p.expiryDate);
-    if (days !== null && days < 0) return "product-card expired";
-    if (days !== null && days <= 3) return "product-card expiring";
-    if (p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock)) return "product-card low-stock";
-    return "product-card";
+  const cardClass = (p) => {
+    const d = daysUntil(p.expiryDate);
+    if (d !== null && d < 0) return "pcard expired";
+    if (d !== null && d <= 3) return "pcard expiring";
+    if (p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock)) return "pcard lowstock";
+    return "pcard";
   };
 
-  const getExpiryColor = (p) => {
-    const days = daysUntil(p.expiryDate);
-    if (days === null) return "";
-    if (days < 0) return "red";
-    if (days <= 3) return "amber";
+  const expiryColor = (p) => {
+    const d = daysUntil(p.expiryDate);
+    if (d === null) return "";
+    if (d < 0) return "red";
+    if (d <= 3) return "amber";
     return "green";
   };
+
+  const navItems = [
+    { key: "dashboard", Icon: Home, label: t.dashboard },
+    { key: "products", Icon: Package, label: t.products },
+    { key: "scanner", Icon: FileText, label: t.scanInvoice },
+    { key: "history", Icon: History, label: t.history },
+    { key: "alerts", Icon: Bell, label: t.alerts, badge: alerts.length || null },
+  ];
 
   return (
     <>
       <style>{css}</style>
       <div className="app">
-        {/* Sidebar */}
-        <nav className="sidebar">
+        <aside className="sidebar">
           <div className="brand">
-            <div className="brand-name">🛒 {t.appName}</div>
-            <div className="brand-sub">v1.0 · {lang.toUpperCase()}</div>
+            <div className="brand-icon"><ShoppingCart size={18} color="white" /></div>
+            <div className="brand-text">Stock<span>Easy</span></div>
           </div>
-          {[
-            { key: "dashboard", icon: "📊", label: t.dashboard },
-            { key: "products", icon: "📦", label: t.products },
-            { key: "scanner", icon: "📄", label: t.scanInvoice },
-            { key: "history", icon: "🗂️", label: t.history },
-            { key: "alerts", icon: "🔔", label: t.alerts, badge: alerts.length || null },
-          ].map(n => (
-            <button key={n.key} className={`nav-btn ${tab === n.key ? "active" : ""}`} onClick={() => setTab(n.key)}>
-              <span className="nav-icon">{n.icon}</span>
-              {n.label}
-              {n.badge ? <span className="nav-badge">{n.badge}</span> : null}
+          <div className="nav-group">
+            <div className="nav-group-label">Navigation</div>
+            {navItems.map(({ key, Icon, label, badge }) => (
+              <button key={key} className={`nav-item ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>
+                <Icon size={17} />
+                {label}
+                {badge ? <span className="nav-badge">{badge}</span> : null}
+              </button>
+            ))}
+          </div>
+          <div className="sidebar-footer">
+            <button className="lang-btn" onClick={() => setLang(l => l === "fr" ? "en" : "fr")}>
+              <Globe size={15} /> {t.lang}
             </button>
-          ))}
-          <button className="lang-btn" onClick={() => setLang(l => l === "fr" ? "en" : "fr")}>{t.lang}</button>
-        </nav>
+          </div>
+        </aside>
 
-        {/* Main */}
         <main className="main">
-
           {/* DASHBOARD */}
           {tab === "dashboard" && (
             <>
-              <div className="page-header">
-                <h1 className="page-title">{t.dashboard}</h1>
-                <button className="btn btn-primary" onClick={openAdd}>+ {t.addProduct}</button>
+              <div className="ph">
+                <div><div className="ph-title">{t.welcomeMsg}</div><div className="ph-sub">{t.welcomeSub}</div></div>
               </div>
-              <div className="stats-grid">
-                <div className="stat-card green-card">
-                  <div className="stat-icon">📦</div>
-                  <div className="stat-val">{products.length}</div>
-                  <div className="stat-lbl">{t.totalProducts}</div>
-                </div>
-                <div className="stat-card alert-card">
-                  <div className="stat-icon">🔔</div>
-                  <div className="stat-val">{alerts.length}</div>
-                  <div className="stat-lbl">{t.totalAlerts}</div>
-                </div>
-                <div className="stat-card red-card">
-                  <div className="stat-icon">⏰</div>
-                  <div className="stat-val">{products.filter(p => { const d = daysUntil(p.expiryDate); return d !== null && d >= 0 && d <= 3; }).length}</div>
-                  <div className="stat-lbl">{t.expiringSoon}</div>
-                </div>
-                <div className="stat-card alert-card">
-                  <div className="stat-icon">📉</div>
-                  <div className="stat-val">{products.filter(p => p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock)).length}</div>
-                  <div className="stat-lbl">{t.lowStockAlert}</div>
-                </div>
+              <div className="stats">
+                <div className="stat s-coral"><div className="stat-ic"><Package size={20} color="var(--coral)" /></div><div className="stat-val">{products.length}</div><div className="stat-lbl">{t.totalProducts}</div></div>
+                <div className="stat s-green"><div className="stat-ic"><CheckCircle size={20} color="var(--green)" /></div><div className="stat-val">{products.filter(p => { const d = daysUntil(p.expiryDate); return d === null || d > 3; }).length}</div><div className="stat-lbl">{t.goodStock}</div></div>
+                <div className="stat s-amber"><div className="stat-ic"><Clock size={20} color="var(--amber)" /></div><div className="stat-val">{products.filter(p => { const d = daysUntil(p.expiryDate); return d !== null && d >= 0 && d <= 3; }).length}</div><div className="stat-lbl">{t.expiringSoon}</div></div>
+                <div className="stat s-red"><div className="stat-ic"><Bell size={20} color="var(--red)" /></div><div className="stat-val">{alerts.length}</div><div className="stat-lbl">{t.totalAlerts}</div></div>
+              </div>
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>{t.quickActions}</div>
+              <div className="quick">
+                <div className="qa qa-primary" onClick={openAdd}><div className="qa-ic"><Plus size={24} color="var(--coral)" /></div><div><div className="qa-title">{t.addProduct}</div><div className="qa-sub">Saisir manuellement</div></div></div>
+                <div className="qa" onClick={() => setTab("scanner")}><div className="qa-ic"><FileText size={24} color="var(--coral)" /></div><div><div className="qa-title">{t.scanInvoice}</div><div className="qa-sub">Importer une facture</div></div></div>
               </div>
               {alerts.length > 0 && (
-                <div className="alerts-list">
-                  {alerts.map(a => (
-                    <div key={a.id} className={`alert-item ${a.type}`}>
-                      <span className="alert-icon">{a.icon}</span>
-                      <div className="alert-content">
-                        <div className="alert-title">{a.title}</div>
-                        <div className="alert-sub">{a.sub}</div>
+                <>
+                  <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12 }}>{t.alerts}</div>
+                  <div className="alist">
+                    {alerts.slice(0, 3).map(({ id, type, Icon, title, sub, color }) => (
+                      <div key={id} className={`arow ${type}`}>
+                        <div className="arow-ic"><Icon size={20} color={color} /></div>
+                        <div><div className="a-title">{title}</div><div className="a-sub">{sub}</div></div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </>
               )}
-              {products.length === 0 && (
-                <div className="empty">
-                  <div className="empty-icon">🛒</div>
-                  <div className="empty-title">{t.noProducts}</div>
-                  <div className="empty-sub">{t.addFirst}</div>
-                </div>
-              )}
+              {products.length === 0 && <div className="empty"><div className="empty-ic"><Package size={32} color="var(--text3)" /></div><div className="empty-title">{t.noProducts}</div><div className="empty-sub">{t.addFirst}</div></div>}
             </>
           )}
 
           {/* PRODUCTS */}
           {tab === "products" && (
             <>
-              <div className="page-header">
-                <h1 className="page-title">{t.products}</h1>
-                <button className="btn btn-primary" onClick={openAdd}>+ {t.addProduct}</button>
+              <div className="ph">
+                <div><div className="ph-title">{t.products}</div><div className="ph-sub">{products.length} produit{products.length !== 1 ? "s" : ""}</div></div>
+                <button className="btn btn-coral" onClick={openAdd}><Plus size={15} /> {t.addProduct}</button>
               </div>
-              <div className="search-bar">
-                <span className="search-icon">🔍</span>
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search} />
-              </div>
+              <div className="search-wrap"><Search size={16} className="search-ic" /><input value={search} onChange={e => setSearch(e.target.value)} placeholder={t.search} /></div>
               {filtered.length === 0 ? (
-                <div className="empty">
-                  <div className="empty-icon">📦</div>
-                  <div className="empty-title">{t.noProducts}</div>
-                  <div className="empty-sub">{t.addFirst}</div>
-                </div>
+                <div className="empty"><div className="empty-ic"><Package size={32} color="var(--text3)" /></div><div className="empty-title">{t.noProducts}</div><div className="empty-sub">{t.addFirst}</div></div>
               ) : (
-                <div className="products-grid">
+                <div className="pgrid">
                   {filtered.map(p => {
-                    const days = daysUntil(p.expiryDate);
+                    const d = daysUntil(p.expiryDate);
+                    const isExpiring = d !== null && d >= 0 && d <= 3;
+                    const isExpired = d !== null && d < 0;
                     return (
-                      <div key={p.id} className={getCardClass(p)}>
-                        <div className="prod-header">
-                          <span className="prod-id">#{p.id}</span>
-                          <div className="prod-badges">
-                            {days !== null && days < 0 && <span className="badge badge-red">{t.expiredLabel}</span>}
-                            {days !== null && days >= 0 && days <= 3 && <span className="badge badge-amber">{t.expiresIn} {days}j</span>}
-                            {p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock) && <span className="badge badge-blue">{t.lowStock}</span>}
+                      <div key={p.id} className={cardClass(p)}>
+                        <div className="ptop">
+                          <span className="pref">#{p.id}</span>
+                          <div className="pbadges">
+                            {isExpired && <span className="badge b-red">{t.expiredLabel}</span>}
+                            {isExpiring && <span className="badge b-amber">J-{d}</span>}
+                            {p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock) && <span className="badge b-indigo">Stock bas</span>}
                           </div>
                         </div>
-                        <div className="prod-name">{p.description}</div>
-                        <div className="prod-barcode">🔖 {p.barcode || "—"}</div>
-                        <div className="prod-info">
-                          <div className="info-item">
-                            <div className="info-label">{t.qtyProducts}</div>
-                            <div className="info-val">{p.qtyProducts || "—"}</div>
-                          </div>
-                          <div className="info-item">
-                            <div className="info-label">{t.qtyArticles}</div>
-                            <div className="info-val">{p.qtyArticles || "—"}</div>
-                          </div>
-                          <div className="info-item">
-                            <div className="info-label">{t.purchaseDate}</div>
-                            <div className="info-val">{fmtDate(p.purchaseDate)}</div>
-                          </div>
-                          <div className="info-item">
-                            <div className="info-label">{t.expiryDate}</div>
-                            <div className={`info-val ${getExpiryColor(p)}`}>{fmtDate(p.expiryDate)}</div>
-                          </div>
+                        <div className="pname">{p.description}</div>
+                        {p.barcode && <div className="pbar">{p.barcode}</div>}
+                        <div className="pgrid2">
+                          <div className="pinfo"><div className="pinfo-l">Articles</div><div className={`pinfo-v ${p.minStock && parseInt(p.qtyArticles) <= parseInt(p.minStock) ? "amber" : ""}`}>{p.qtyArticles || "—"}</div></div>
+                          <div className="pinfo"><div className="pinfo-l">Achat</div><div className="pinfo-v">{fmtDate(p.purchaseDate)}</div></div>
+                          <div className="pinfo" style={{ gridColumn: "1/-1" }}><div className="pinfo-l">Péremption</div><div className={`pinfo-v ${expiryColor(p)}`}>{fmtDate(p.expiryDate)}</div></div>
                         </div>
-                        <div className="prod-actions">
-                          <button className="btn btn-secondary btn-sm" onClick={() => openEdit(p)}>✏️ {t.edit}</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(p.id)}>🗑️ {t.delete}</button>
+                        <div className="pactions">
+                          <button className="btn btn-outline btn-sm" onClick={() => openEdit(p)}><Edit2 size={13} /> {t.edit}</button>
+                          <button className="btn btn-amber btn-sm" onClick={() => setPromoProduct(p)}><Printer size={13} /> Promo</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => setConfirmDelete(p.id)}><Trash2 size={13} /></button>
                         </div>
                       </div>
                     );
@@ -512,43 +614,22 @@ export default function EpicerieApp() {
           {/* SCANNER */}
           {tab === "scanner" && (
             <>
-              <div className="page-header">
-                <h1 className="page-title">{t.scanInvoice}</h1>
-              </div>
-              <InvoiceScanner t={t} lang={lang} onInvoiceSaved={(inv, prods) => {
-                setInvoices(prev => [inv, ...prev]);
-                setProducts(prev => [...prods, ...prev]);
-                showToast(t.invoiceAnalyzed);
-                setTab("products");
-              }} />
+              <div className="ph"><div><div className="ph-title">{t.scanInvoice}</div><div className="ph-sub">Importez une facture pour l'analyser automatiquement</div></div></div>
+              <InvoiceScanner t={t} onSaved={(inv, prods) => { setInvoices(prev => [inv, ...prev]); setProducts(prev => [...prods, ...prev]); showToast("✅ " + t.invoiceAnalyzed); setTab("products"); }} />
             </>
           )}
 
           {/* HISTORY */}
           {tab === "history" && (
             <>
-              <div className="page-header">
-                <h1 className="page-title">{t.invoiceHistory}</h1>
-              </div>
-              {invoices.length === 0 ? (
-                <div className="empty">
-                  <div className="empty-icon">🗂️</div>
-                  <div className="empty-title">{t.noHistory}</div>
-                </div>
-              ) : (
-                <div className="history-list">
+              <div className="ph"><div><div className="ph-title">{t.invoiceHistory}</div><div className="ph-sub">{invoices.length} facture{invoices.length !== 1 ? "s" : ""}</div></div></div>
+              {invoices.length === 0 ? <div className="empty"><div className="empty-ic"><History size={32} color="var(--text3)" /></div><div className="empty-title">{t.noHistory}</div></div> : (
+                <div className="hlist">
                   {invoices.map((inv, i) => (
-                    <div key={i} className="history-card">
-                      <div className="history-header">
-                        <div className="history-supplier">{inv.supplier}</div>
-                        <div className="history-amount">{inv.amount}</div>
-                      </div>
-                      <div className="history-meta">📅 {inv.date}</div>
-                      {inv.products?.length > 0 && (
-                        <div className="history-products">
-                          {inv.products.map((pr, j) => <span key={j} className="history-tag">{pr}</span>)}
-                        </div>
-                      )}
+                    <div key={i} className="hrow">
+                      <div className="htop"><div className="h-sup">{inv.supplier}</div><div className="h-amt">{inv.amount}</div></div>
+                      <div className="h-date">{fmtDate(inv.date)}</div>
+                      {inv.products?.length > 0 && <div className="htags">{inv.products.map((pr, j) => <span key={j} className="htag">{pr}</span>)}</div>}
                     </div>
                   ))}
                 </div>
@@ -559,23 +640,13 @@ export default function EpicerieApp() {
           {/* ALERTS */}
           {tab === "alerts" && (
             <>
-              <div className="page-header">
-                <h1 className="page-title">{t.alerts}</h1>
-              </div>
-              {alerts.length === 0 ? (
-                <div className="empty">
-                  <div className="empty-icon">✅</div>
-                  <div className="empty-title">{t.noAlerts}</div>
-                </div>
-              ) : (
-                <div className="alerts-list">
-                  {alerts.map(a => (
-                    <div key={a.id} className={`alert-item ${a.type}`}>
-                      <span className="alert-icon">{a.icon}</span>
-                      <div className="alert-content">
-                        <div className="alert-title">{a.title}</div>
-                        <div className="alert-sub">{a.sub}</div>
-                      </div>
+              <div className="ph"><div><div className="ph-title">{t.alerts}</div><div className="ph-sub">{alerts.length} alerte{alerts.length !== 1 ? "s" : ""}</div></div></div>
+              {alerts.length === 0 ? <div className="empty"><div className="empty-ic"><CheckCircle size={32} color="var(--text3)" /></div><div className="empty-title">{t.noAlerts}</div><div className="empty-sub">Tous vos produits sont en ordre</div></div> : (
+                <div className="alist">
+                  {alerts.map(({ id, type, Icon, title, sub, color }) => (
+                    <div key={id} className={`arow ${type}`}>
+                      <div className="arow-ic"><Icon size={20} color={color} /></div>
+                      <div><div className="a-title">{title}</div><div className="a-sub">{sub}</div></div>
                     </div>
                   ))}
                 </div>
@@ -585,74 +656,49 @@ export default function EpicerieApp() {
         </main>
       </div>
 
-      {/* Product Form Modal */}
       {showForm && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowForm(false)}>
+        <div className="overlay" onClick={e => e.target === e.currentTarget && setShowForm(false)}>
           <div className="modal">
-            <div className="modal-title">{editProduct ? "✏️ " + t.edit : "➕ " + t.addProduct}</div>
-            <div className="form-grid">
-              <div className="form-group">
-                <label className="form-label">{t.productId}</label>
-                <input className="form-input" value={form.id} onChange={e => setForm(f => ({ ...f, id: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t.barcode}</label>
-                <input className="form-input" value={form.barcode} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} />
-              </div>
-              <div className="form-group full">
-                <label className="form-label">{t.description}</label>
-                <input className="form-input" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t.qtyProducts}</label>
-                <input className="form-input" type="number" value={form.qtyProducts} onChange={e => setForm(f => ({ ...f, qtyProducts: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t.qtyArticles}</label>
-                <input className="form-input" type="number" value={form.qtyArticles} onChange={e => setForm(f => ({ ...f, qtyArticles: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t.purchaseDate}</label>
-                <input className="form-input" type="date" value={form.purchaseDate} onChange={e => setForm(f => ({ ...f, purchaseDate: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{t.expiryDate}</label>
-                <input className="form-input" type="date" value={form.expiryDate} onChange={e => setForm(f => ({ ...f, expiryDate: e.target.value }))} />
-              </div>
-              <div className="form-group full">
-                <label className="form-label">{t.minStock}</label>
-                <input className="form-input" type="number" value={form.minStock} onChange={e => setForm(f => ({ ...f, minStock: e.target.value }))} />
-              </div>
+            <div className="modal-title">{editId ? "Modifier le produit" : "Nouveau produit"}</div>
+            <div className="fgrid">
+              <div className="fg"><label className="flabel">{t.productId}</label><input className="finput" value={form.id || ""} onChange={e => setForm(f => ({ ...f, id: e.target.value }))} /></div>
+              <div className="fg"><label className="flabel">{t.barcode}</label><input className="finput" value={form.barcode || ""} onChange={e => setForm(f => ({ ...f, barcode: e.target.value }))} /></div>
+              <div className="fg full"><label className="flabel">{t.description}</label><input className="finput" value={form.description || ""} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Ex: Chips Vivo nature" /></div>
+              <div className="fg"><label className="flabel">{t.qtyProducts}</label><input className="finput" type="number" value={form.qtyProducts || ""} onChange={e => setForm(f => ({ ...f, qtyProducts: e.target.value }))} /></div>
+              <div className="fg"><label className="flabel">{t.qtyArticles}</label><input className="finput" type="number" value={form.qtyArticles || ""} onChange={e => setForm(f => ({ ...f, qtyArticles: e.target.value }))} /></div>
+              <div className="fg"><label className="flabel">{t.purchaseDate}</label><input className="finput" type="date" value={form.purchaseDate || ""} onChange={e => setForm(f => ({ ...f, purchaseDate: e.target.value }))} /></div>
+              <div className="fg"><label className="flabel">{t.expiryDate}</label><input className="finput" type="date" value={form.expiryDate || ""} onChange={e => setForm(f => ({ ...f, expiryDate: e.target.value }))} /></div>
+              <div className="fg full"><label className="flabel">{t.minStock}</label><input className="finput" type="number" value={form.minStock || ""} onChange={e => setForm(f => ({ ...f, minStock: e.target.value }))} placeholder="Ex: 5" /></div>
             </div>
-            <div className="form-actions">
-              <button className="btn btn-secondary" onClick={() => setShowForm(false)}>{t.cancel}</button>
-              <button className="btn btn-primary" onClick={saveProduct}>{t.save}</button>
+            <div className="factions">
+              <button className="btn btn-outline" onClick={() => setShowForm(false)}><X size={14} /> {t.cancel}</button>
+              <button className="btn btn-coral" onClick={saveProduct}><Save size={14} /> {t.save}</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Confirm delete */}
       {confirmDelete && (
-        <div className="confirm">
-          <div className="confirm-box">
-            <div className="confirm-title">{t.confirmDelete}</div>
-            <div className="confirm-actions">
-              <button className="btn btn-secondary" onClick={() => setConfirmDelete(null)}>{t.no}</button>
-              <button className="btn btn-danger" onClick={() => deleteProduct(confirmDelete)}>{t.yes}</button>
+        <div className="cover">
+          <div className="cbox">
+            <div className="c-title">{t.confirmDelete}</div>
+            <div className="c-sub">Cette action est irréversible.</div>
+            <div className="c-actions">
+              <button className="btn btn-outline" onClick={() => setConfirmDelete(null)}>{t.no}</button>
+              <button className="btn btn-danger" onClick={() => { setProducts(ps => ps.filter(p => p.id !== confirmDelete)); setConfirmDelete(null); }}>{t.yes}</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toast */}
-      {toast && <div className="toast">✅ {toast}</div>}
+      {promoProduct && <PromoForm product={promoProduct} onClose={() => setPromoProduct(null)} t={t} />}
+      {toast && <div className="toast">{toast}</div>}
     </>
   );
 }
 
-// ─── Invoice Scanner Component ─────────────────────────────────────────────────
-function InvoiceScanner({ t, onInvoiceSaved }) {
+// ─── Invoice Scanner ──────────────────────────────────────────────────────────
+function InvoiceScanner({ t, onSaved }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -661,145 +707,61 @@ function InvoiceScanner({ t, onInvoiceSaved }) {
   const [extracted, setExtracted] = useState(null);
   const fileRef = useRef();
 
-  const handleFile = (f) => {
-    if (!f) return;
-    setFile(f); setError(null); setExtracted(null);
-    const r = new FileReader();
-    r.onload = e => setPreview(e.target.result);
-    r.readAsDataURL(f);
-  };
+  const handleFile = (f) => { if (!f) return; setFile(f); setError(null); setExtracted(null); const r = new FileReader(); r.onload = e => setPreview(e.target.result); r.readAsDataURL(f); };
 
   const analyze = async () => {
     if (!file) return;
     setLoading(true); setError(null);
     try {
-      const base64 = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result.split(",")[1]);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
-
-      const contentBlock = file.type === "application/pdf"
-        ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } }
-        : { type: "image", source: { type: "base64", media_type: file.type, data: base64 } };
-
+      const base64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result.split(",")[1]); r.onerror = rej; r.readAsDataURL(file); });
+      const block = file.type === "application/pdf" ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } } : { type: "image", source: { type: "base64", media_type: file.type, data: base64 } };
       const resp = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: [contentBlock, {
-              type: "text",
-              text: `Analyse cette facture d'épicerie et retourne UNIQUEMENT un JSON valide (sans markdown) avec cette structure exacte:
-{
-  "supplier": "nom du fournisseur",
-  "date": "YYYY-MM-DD",
-  "amount": "montant total avec devise ex: 150.00 €",
-  "products": [
-    {
-      "description": "nom du produit",
-      "barcode": "code barre si visible sinon vide",
-      "qtyProducts": "1",
-      "qtyArticles": "nombre d'articles",
-      "purchaseDate": "YYYY-MM-DD"
-    }
-  ]
-}
-Réponds UNIQUEMENT avec le JSON.`
-            }]
-          }]
-        })
+        headers: { "Content-Type": "application/json", "x-api-key": "REPLACE_API_KEY", "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: [block, { type: "text", text: `Analyse cette facture et retourne UNIQUEMENT un JSON valide sans markdown:\n{"supplier":"nom","date":"YYYY-MM-DD","amount":"montant €","products":[{"description":"nom","barcode":"","qtyArticles":"1","purchaseDate":"YYYY-MM-DD"}]}` }] }] })
       });
-
       const data = await resp.json();
       if (data.error) throw new Error(data.error.message);
-      const raw = data.content.map(b => b.text || "").join("").replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(raw);
-      setExtracted(parsed);
-    } catch (e) {
-      setError(t.errorAnalysis);
-    } finally {
-      setLoading(false);
-    }
+      setExtracted(JSON.parse(data.content.map(b => b.text || "").join("").replace(/```json|```/g, "").trim()));
+    } catch { setError(t.errorAnalysis); } finally { setLoading(false); }
   };
 
-  const saveInvoice = () => {
+  const save = () => {
     if (!extracted) return;
-    const uid = () => Math.random().toString(36).slice(2, 8).toUpperCase();
-    const prods = (extracted.products || []).map(p => ({
-      id: uid(), barcode: p.barcode || "", description: p.description,
-      qtyProducts: p.qtyProducts || "1", qtyArticles: p.qtyArticles || "1",
-      purchaseDate: p.purchaseDate || new Date().toISOString().split("T")[0],
-      expiryDate: "", minStock: ""
-    }));
-    onInvoiceSaved({
-      supplier: extracted.supplier, date: extracted.date,
-      amount: extracted.amount, products: prods.map(p => p.description)
-    }, prods);
+    const prods = (extracted.products || []).map(p => ({ id: Math.random().toString(36).slice(2, 8).toUpperCase(), barcode: p.barcode || "", description: p.description, qtyProducts: "1", qtyArticles: p.qtyArticles || "1", purchaseDate: p.purchaseDate || today(), expiryDate: "", minStock: "" }));
+    onSaved({ supplier: extracted.supplier, date: extracted.date, amount: extracted.amount, products: prods.map(p => p.description) }, prods);
   };
 
   return (
-    <div className="scanner-layout">
+    <div className="scanner">
       <div>
         {!preview ? (
-          <div className={`drop-zone ${drag ? "drag" : ""}`}
-            onDragOver={e => { e.preventDefault(); setDrag(true); }}
-            onDragLeave={() => setDrag(false)}
-            onDrop={e => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files[0]); }}
-            onClick={() => fileRef.current.click()}>
+          <div className={`dropzone ${drag ? "drag" : ""}`} onDragOver={e => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)} onDrop={e => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files[0]); }} onClick={() => fileRef.current.click()}>
             <input ref={fileRef} type="file" accept="image/*,.pdf" onChange={e => handleFile(e.target.files[0])} />
-            <div className="drop-icon">📤</div>
-            <div className="drop-title">{t.dragDrop}</div>
-            <div className="drop-sub">{t.formats}</div>
+            <div className="dz-ic"><Upload size={24} color="var(--coral)" /></div>
+            <div className="dz-title">{t.dragDrop}</div>
+            <div className="dz-sub">{t.formats}</div>
           </div>
         ) : (
           <>
-            <img src={preview} alt="preview" className="preview-img" />
-            {error && <div style={{ color: "var(--red)", fontSize: 13, marginBottom: 12, fontFamily: "var(--mono)" }}>⚠ {error}</div>}
+            <img src={preview} alt="preview" className="prev-img" />
+            {error && <div className="errbox">{error}</div>}
             <div style={{ display: "flex", gap: 10 }}>
-              <button className="btn btn-primary" onClick={analyze} disabled={loading}>
-                {loading ? t.analyzing : "✨ " + t.analyze}
-              </button>
-              <button className="btn btn-secondary" onClick={() => { setFile(null); setPreview(null); setExtracted(null); }}>✕</button>
+              <button className="btn btn-coral" onClick={analyze} disabled={loading}>{loading ? t.analyzing : t.analyze}</button>
+              <button className="btn btn-outline" onClick={() => { setFile(null); setPreview(null); setExtracted(null); }}><X size={14} /></button>
             </div>
           </>
         )}
       </div>
-
       <div>
-        {loading && (
-          <div className="loading-wrap">
-            <div className="spinner" />
-            <div className="loading-text">{t.analyzing}</div>
-          </div>
-        )}
+        {loading && <div className="spin-wrap"><div className="spin" /><div style={{ fontSize: 13.5, color: "var(--text2)" }}>{t.analyzing}</div></div>}
         {extracted && !loading && (
-          <div className="extracted-fields">
-            <div className="extract-item">
-              <div className="extract-label">{t.supplier}</div>
-              <div className="extract-val">{extracted.supplier}</div>
-            </div>
-            <div className="extract-item">
-              <div className="extract-label">{t.invoiceDate}</div>
-              <div className="extract-val">{extracted.date}</div>
-            </div>
-            <div className="extract-item">
-              <div className="extract-label">{t.amount}</div>
-              <div className="extract-val" style={{ color: "var(--green)", fontFamily: "var(--mono)" }}>{extracted.amount}</div>
-            </div>
-            <div className="extract-item">
-              <div className="extract-label">{t.products}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
-                {(extracted.products || []).map((p, i) => (
-                  <div key={i} style={{ fontSize: 13, fontFamily: "var(--mono)" }}>• {p.description} (x{p.qtyArticles})</div>
-                ))}
-              </div>
-            </div>
-            <button className="btn btn-primary" onClick={saveInvoice}>💾 {t.save}</button>
+          <div className="extracted">
+            <div className="ex-item"><div className="ex-l">{t.supplier}</div><div className="ex-v">{extracted.supplier}</div></div>
+            <div className="ex-item"><div className="ex-l">{t.invoiceDate}</div><div className="ex-v">{fmtDate(extracted.date)}</div></div>
+            <div className="ex-item"><div className="ex-l">{t.amount}</div><div className="ex-v" style={{ color: "var(--coral)", fontWeight: 800 }}>{extracted.amount}</div></div>
+            <div className="ex-item"><div className="ex-l">{t.products}</div>{(extracted.products || []).map((p, i) => <div key={i} style={{ fontSize: 13, marginTop: 4 }}>• {p.description} ×{p.qtyArticles}</div>)}</div>
+            <button className="btn btn-coral" onClick={save}><Save size={15} /> {t.save}</button>
           </div>
         )}
       </div>
